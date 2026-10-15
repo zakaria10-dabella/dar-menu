@@ -1,13 +1,71 @@
-import { useEffect, useRef, useState } from 'react'
+import { Fragment, useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { ShoppingBag } from 'lucide-react'
 import { useApp } from '../context/AppContext'
 import { categories, dishes } from '../data/menu'
-import DishCard from './DishCard'
+import { DishFeature, DishPortrait, DishRow, DishTile } from './DishCard'
 import DishSheet from './DishSheet'
 import OrderSheet from './OrderSheet'
 import LangSwitch from './LangSwitch'
-import { Logo, TajineStage } from './Brand'
+import SidePanel from './SidePanel'
+import QuoteBand from './QuoteBand'
+import Footer from './Footer'
+import Mark from './Mark'
+
+const ease = [0.22, 1, 0.36, 1]
+
+function SectionHead({ c, lang }) {
+  return (
+    <motion.header initial={{ opacity: 0, y: 14 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6, ease }} className="mb-5">
+      <h2 className="display text-[2.4rem] leading-none">{c[lang]}</h2>
+      <p className="mt-2 text-[0.95rem] italic text-ink-soft">{c.note[lang]}</p>
+    </motion.header>
+  )
+}
+
+/** Each chapter of the menu gets its own layout so the page reads like a printed carte, not a feed. */
+function Section({ c, lang, onOpen }) {
+  const list = dishes.filter((d) => d.category === c.id)
+  const head = <SectionHead c={c} lang={lang} />
+
+  if (c.id === 'tajines') {
+    const [hero, ...rest] = [...list].sort((a, b) => b.tags.includes('signature') - a.tags.includes('signature'))
+    return (
+      <>
+        {head}
+        <ul>
+          <DishFeature dish={hero} onOpen={onOpen} />
+          {rest.map((d) => <DishRow key={d.id} dish={d} onOpen={onOpen} />)}
+        </ul>
+      </>
+    )
+  }
+  if (c.id === 'couscous') {
+    return (
+      <>
+        {head}
+        <ul className="scrollbar-none -mx-5 flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-px-5 px-5 pb-2 sm:-mx-8 sm:scroll-px-8 sm:px-8 lg:mx-0 lg:grid lg:grid-cols-3 lg:overflow-visible lg:px-0" aria-label={c[lang]}>
+          {list.map((d) => <DishPortrait key={d.id} dish={d} onOpen={onOpen} />)}
+        </ul>
+      </>
+    )
+  }
+  if (c.id === 'desserts') {
+    return (
+      <>
+        {head}
+        <ul className="grid grid-cols-2 gap-x-4 gap-y-7">
+          {list.map((d, i) => <DishTile key={d.id} dish={d} i={i} onOpen={onOpen} />)}
+        </ul>
+      </>
+    )
+  }
+  return (
+    <>
+      {head}
+      <ul>{list.map((d) => <DishRow key={d.id} dish={d} onOpen={onOpen} compact={c.id === 'drinks'} />)}</ul>
+    </>
+  )
+}
 
 export default function Menu() {
   const { lang, t, price, count, total } = useApp()
@@ -17,11 +75,11 @@ export default function Menu() {
   const tabRefs = useRef({})
   const lock = useRef(false)
 
-  // scroll-spy: highlight the category whose section crosses the middle of the screen
+  // scroll-spy: highlight the category whose section crosses the upper third of the screen
   useEffect(() => {
     const io = new IntersectionObserver(
       (entries) => entries.forEach((e) => e.isIntersecting && !lock.current && setActive(e.target.dataset.cat)),
-      { rootMargin: '-40% 0px -55% 0px' },
+      { rootMargin: '-35% 0px -60% 0px' },
     )
     categories.forEach((c) => {
       const el = document.getElementById(`cat-${c.id}`)
@@ -38,82 +96,81 @@ export default function Menu() {
     setActive(id)
     lock.current = true
     document.getElementById(`cat-${id}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-    setTimeout(() => (lock.current = false), 800)
+    setTimeout(() => (lock.current = false), 900)
   }
 
   const dish = dishes.find((d) => d.id === openDish)
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.4 }}>
-      {/* desktop brand panel */}
-      <aside className="zellige fixed inset-y-0 start-0 hidden w-[44%] flex-col justify-between p-10 text-cream-50 lg:flex">
-        <div className="flex items-center gap-3"><Logo className="h-10 w-10" /><span className="display text-2xl font-semibold">Dar Zellige</span></div>
-        <TajineStage className="mx-auto aspect-square w-full max-w-[520px]" />
-        <div>
-          <p className="display text-5xl font-semibold leading-tight">{t.tagline}</p>
-          <p className="mt-3 text-sm text-cream-100/60">Boulevard de la Corniche, Aïn Diab · {t.open}</p>
-        </div>
-      </aside>
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>
+      <SidePanel active={active} />
 
-      <div className="lg:ms-[44%]">
-        <header className="sticky top-0 z-30 bg-cream-100/85 backdrop-blur-xl">
-          <div className="mx-auto flex max-w-lg items-center justify-between px-5 pt-4">
-            <div className="flex items-center gap-2.5">
-              <Logo className="h-9 w-9 lg:hidden" />
-              <div>
-                <p className="display text-xl font-semibold leading-none">{t.menu}</p>
-                <p className="text-xs text-ink/50">Dar Zellige · {t.table} 7</p>
-              </div>
+      <div className="lg:ms-[42%]">
+        <header className="sticky top-0 z-30 border-b border-forest-900/10 bg-paper-100/95 backdrop-blur-md">
+          <div className="mx-auto flex max-w-xl items-center justify-between gap-3 px-5 pt-3 sm:px-8">
+            <div className="flex min-w-0 items-center gap-2.5">
+              <Mark className="h-6 w-6 shrink-0 text-forest-800" />
+              <p className="truncate">
+                <span className="display text-lg">{lang === 'ar' ? 'دار الزليج' : 'Dar Zellige'}</span>
+                <span className="ms-2 text-sm text-ink-soft">{t.table} 7</span>
+              </p>
             </div>
             <LangSwitch />
           </div>
-          <nav className="scrollbar-none mx-auto mt-3 flex max-w-lg gap-1 overflow-x-auto border-b border-emerald-800/10 px-3" aria-label="Categories">
+          <nav className="scrollbar-none mx-auto mt-1 flex max-w-xl gap-1 overflow-x-auto px-3 sm:px-6" aria-label={t.menu}>
             {categories.map((c) => (
               <button
                 key={c.id}
                 ref={(el) => (tabRefs.current[c.id] = el)}
                 onClick={() => jump(c.id)}
-                aria-current={active === c.id}
-                className={`relative shrink-0 whitespace-nowrap px-3 pb-3 pt-1 text-sm font-semibold transition-colors ${active === c.id ? 'text-emerald-800' : 'text-ink/45 hover:text-ink/70'}`}
+                aria-current={active === c.id ? 'true' : undefined}
+                className={`relative h-11 shrink-0 whitespace-nowrap px-3 text-[0.95rem] font-bold transition-colors ${active === c.id ? 'text-forest-900' : 'text-ink-soft hover:text-ink'}`}
               >
                 {c[lang]}
-                {active === c.id && <motion.span layoutId="tab-underline" className="absolute inset-x-2 -bottom-px h-[3px] rounded-full bg-saffron-500" transition={{ type: 'spring', stiffness: 500, damping: 36 }} />}
+                {active === c.id && <motion.span layoutId="tab-underline" className="absolute inset-x-3 bottom-0 h-[3px] rounded-full bg-saffron-400" transition={{ type: 'spring', stiffness: 500, damping: 40 }} />}
               </button>
             ))}
           </nav>
         </header>
 
-        <main className="mx-auto max-w-lg px-4 pb-36 pt-4">
+        <main className="mx-auto max-w-xl px-5 pb-16 sm:px-8">
+          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, ease, delay: 0.2 }} className="pb-4 pt-9">
+            <p className="eyebrow text-ink-soft">{t.district} · {t.city}</p>
+            <h1 className="display mt-2 text-[clamp(3.2rem,15vw,4.6rem)] leading-[0.9]">{t.menu}</h1>
+            <p className="mt-4 max-w-md text-[1.02rem] leading-relaxed text-ink-soft">{t.intro}</p>
+          </motion.div>
+
           {categories.map((c) => (
-            <section key={c.id} id={`cat-${c.id}`} data-cat={c.id} className="scroll-mt-28 pt-6">
-              <motion.h2 initial={{ opacity: 0, x: -16 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} className="display mb-4 flex items-center gap-3 px-1 text-3xl font-semibold">
-                {c[lang]}
-                <span className="h-px flex-1 bg-gradient-to-r from-saffron-500/60 to-transparent rtl:bg-gradient-to-l" />
-              </motion.h2>
-              <ul className="space-y-3">
-                {dishes.filter((d) => d.category === c.id).map((d) => <DishCard key={d.id} dish={d} onOpen={setOpenDish} />)}
-              </ul>
-            </section>
+            <Fragment key={c.id}>
+              {c.id === 'grills' && <QuoteBand />}
+              <section id={`cat-${c.id}`} data-cat={c.id} className="scroll-mt-32 pt-12">
+                <Section c={c} lang={lang} onOpen={setOpenDish} />
+              </section>
+            </Fragment>
           ))}
-          <p className="mt-10 text-center text-xs text-ink/40">{t.service} · Concept by Zakaria Dabella</p>
         </main>
+        <Footer />
       </div>
 
       <AnimatePresence>
         {count > 0 && !orderOpen && !dish && (
-          <motion.div initial={{ y: 120 }} animate={{ y: 0 }} exit={{ y: 120 }} transition={{ type: 'spring', stiffness: 400, damping: 34 }} className="fixed inset-x-0 bottom-0 z-40 px-4 pb-5 lg:start-[44%]">
-            <motion.button
-              whileTap={{ scale: 0.97 }}
+          <motion.div
+            initial={{ y: 120 }}
+            animate={{ y: 0 }}
+            exit={{ y: 120 }}
+            transition={{ type: 'spring', stiffness: 400, damping: 38 }}
+            className="fixed inset-x-0 bottom-0 z-40 px-4 pb-[max(1.25rem,env(safe-area-inset-bottom))] lg:start-[42%]"
+          >
+            <button
               onClick={() => setOrderOpen(true)}
-              className="mx-auto flex w-full max-w-lg items-center gap-3 rounded-full bg-emerald-800 py-3 pe-6 ps-3 text-cream-50 shadow-[0_20px_40px_-12px_rgba(10,42,35,.6)]"
+              className="on-dark mx-auto flex h-16 w-full max-w-xl items-center gap-3 rounded-full bg-forest-900 pe-6 ps-2.5 text-paper-50 shadow-[0_20px_40px_-14px_rgba(11,29,25,.7)] transition-colors hover:bg-forest-800"
             >
-              <motion.span key={count} initial={{ scale: 1.4 }} animate={{ scale: 1 }} className="relative grid h-11 w-11 place-items-center rounded-full bg-saffron-500 text-emerald-900">
-                <ShoppingBag size={18} />
-                <span className="tnum absolute -end-1 -top-1 grid h-5 min-w-5 place-items-center rounded-full bg-cream-50 px-1 text-[11px] font-bold text-emerald-900">{count}</span>
+              <motion.span key={count} initial={{ scale: 1.25 }} animate={{ scale: 1 }} className="tnum grid h-11 min-w-11 place-items-center rounded-full bg-saffron-400 px-2 font-bold text-forest-950">
+                {count}
               </motion.span>
               <span className="font-bold">{t.viewOrder}</span>
-              <span className="tnum ms-auto font-bold">{price(total)}</span>
-            </motion.button>
+              <span className="tnum ms-auto font-bold text-saffron-300">{price(total)}</span>
+            </button>
           </motion.div>
         )}
       </AnimatePresence>

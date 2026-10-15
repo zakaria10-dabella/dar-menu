@@ -3,7 +3,7 @@
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "description": "A mobile-first QR menu for a Moroccan restaurant with FR/EN/AR (RTL) support, a 3D tajine and Framer Motion bottom sheets.",
+  "description": "A mobile-first QR menu for a Moroccan restaurant with FR/EN/AR (RTL) support, real dish photography and Framer Motion bottom sheets.",
   "author": "Zakaria Dabella",
   "license": "MIT",
   "scripts": {
@@ -12,13 +12,14 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@react-three/drei": "9.117.3",
-    "@react-three/fiber": "8.17.10",
+    "@fontsource/amiri": "5.3.0",
+    "@fontsource/cairo": "5.3.0",
+    "@fontsource/karla": "5.3.0",
+    "@fontsource/playfair-display-sc": "5.3.0",
     "framer-motion": "11.18.2",
     "lucide-react": "0.468.0",
     "react": "18.3.1",
-    "react-dom": "18.3.1",
-    "three": "0.170.0"
+    "react-dom": "18.3.1"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "4.3.4",

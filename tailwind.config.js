@@ -4,18 +4,19 @@ export default {
   theme: {
     extend: {
       colors: {
-        cream: { 50: '#FFFBF3', 100: '#FBF3E4', 200: '#F3E4C8' },
-        emerald: { 700: '#145244', 800: '#0F3D33', 900: '#0A2A23' },
-        saffron: { 400: '#F0B85A', 500: '#E8A33D' },
-        terracotta: '#B5482D',
-        teal: '#1F8A84',
-        ink: '#1D1B16',
+        // Deep forest (zellige glaze), bone paper, one saffron accent.
+        forest: { 950: '#0B1D19', 900: '#102A24', 800: '#163A31', 700: '#21503F' },
+        paper: { 50: '#FBF7EF', 100: '#F4EDE1', 200: '#EAE0CD', 300: '#D8C9AC' },
+        ink: { DEFAULT: '#1C1A16', soft: '#575045' },
+        saffron: { 300: '#F0C978', 400: '#E6B04F', 500: '#D9962B' },
       },
       fontFamily: {
-        serif: ['"Cormorant Garamond"', 'Georgia', 'serif'],
-        sans: ['"DM Sans"', 'system-ui', 'sans-serif'],
+        display: ['"Playfair Display SC"', 'Georgia', 'serif'],
+        sans: ['Karla', 'system-ui', 'sans-serif'],
         arabic: ['Cairo', 'system-ui', 'sans-serif'],
+        arabicDisplay: ['Amiri', 'Georgia', 'serif'],
       },
+      transitionTimingFunction: { out: 'cubic-bezier(0.22, 1, 0.36, 1)' },
     },
   },
   plugins: [],
